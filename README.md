@@ -20,6 +20,7 @@ pip install -r requirments.txt
 ```
 ### Step 4
 - Check parameters in `build/default.py`
+- ami must be checked(varies by region)
 ```
 ### VPC
 region = "us-east-1"
