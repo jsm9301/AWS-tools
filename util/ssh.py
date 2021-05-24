@@ -79,7 +79,7 @@ if __name__ == '__main__':
     wi = SSHConnector(region="us-east-1")
 
     # ### connect bastion
-    # wi.connect_ssh(instance_id="i-09b578b4e67af670f", pem_key_path="../build/TEST-PEM.pem")
+    # wi.connect_ssh(instance_id="", pem_key_path="../build/TEST-PEM.pem")
     #
     # ### send pem key to bastion
     # wi.send_pem_key_with_id(pem_key_path="../build/TEST-PEM.pem")
