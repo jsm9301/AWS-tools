@@ -78,4 +78,4 @@ if __name__ == '__main__':
             print("bye")
             break
         print("packet capture is running...")
-        answer = input("Do you want to quit ?(y/n) : ")
+        answer = input("Do you want to quit and save?(y/n) : ")
