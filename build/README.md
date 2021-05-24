@@ -1,5 +1,6 @@
 ## Default infrastructure on AWS
 - You can build this infrastructure one click
+
 ![default_infra](https://user-images.githubusercontent.com/20178616/119307386-99735e80-bca6-11eb-984a-4bf086808bb9.png)
 - Check parameters in `build/default.py`
 - ami must be checked(varies by region)
