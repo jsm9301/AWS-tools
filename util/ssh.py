@@ -94,18 +94,20 @@ if __name__ == '__main__':
 
     bastion_id = ""
     instance_list = ["", ""]
+    user = ""
+    pem_key_path = ""
     print(get_ip(wi.ec2, bastion_id, True))
     print(get_ip(wi.ec2, instance_list[0], False))
     for instance_id in instance_list:
         with wi.tunneling(host=get_ip(wi.ec2, bastion_id, True),
                      host_port=22,
-                     user="",
-                     pem_key_path="",
+                     user=user,
+                     pem_key_path=pem_key_path,
                      remote_ip=get_ip(wi.ec2, instance_id, False),
                      remote_port=22) as tunnel:
 
             tunnel.start()
-            wi.connect_ssh(ip_address="127.0.0.1", port=10022, pem_key_path="")
+            wi.connect_ssh(ip_address="127.0.0.1", port=10022, pem_key_path=pem_key_path)
             wi.command_delivery("sudo amazon-linux-extras install nginx1 -y && sudo service nginx start")
             tunnel.stop()
 

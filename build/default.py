@@ -78,7 +78,7 @@ class DefaultBuilder:
                               remote_ip=get_ip(ssh.ec2, web.id, False),
                               remote_port=22) as tunnel:
                 tunnel.start()
-                ssh.connect_ssh(ip_address="127.0.0.1", port=10022)
+                ssh.connect_ssh(ip_address="127.0.0.1", port=10022, pem_key_path=pem_key_path)
                 ssh.command_delivery("sudo amazon-linux-extras install nginx1 -y && sudo service nginx start")
                 tunnel.stop()
 
