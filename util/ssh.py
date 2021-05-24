@@ -48,10 +48,10 @@ class SSHConnector:
         else:
             self.logger.info("ssh failed")
 
-    def send_file(self, pem_key_path="./TEST-PEM.pem", remote_path="/home/ec2-user/TEST-PEM.pem"):
+    def send_file(self, local_path="./TEST-PEM.pem", remote_path="/home/ec2-user/TEST-PEM.pem"):
         try:
             with SCPClient(self.ssh.get_transport()) as scp:
-                scp.put(pem_key_path, remote_path, preserve_times=True)
+                scp.put(local_path, remote_path, preserve_times=True)
                 self.logger.info("scp success")
         except SCPException:
             self.logger.error("scp failed")
@@ -66,8 +66,7 @@ class SSHConnector:
     def command_delivery(self, commands):
         stdin, stdout, stderr = self.ssh.exec_command(commands)
 
-        self.logger.info(stdout.read())
-        self.logger.error(stderr.read())
+        return stdin, stdout, stderr
 
     def tunneling(self, host, host_port, pem_key_path,
                   remote_ip, remote_port, user="ec2-user",
