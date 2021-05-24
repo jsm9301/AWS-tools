@@ -48,11 +48,18 @@ class SSHConnector:
         else:
             self.logger.info("ssh failed")
 
-    def send_pem_key_with_id(self, pem_key_path="./TEST-PEM.pem", remote_path="/home/ec2-user/TEST-PEM.pem"):
+    def send_file(self, pem_key_path="./TEST-PEM.pem", remote_path="/home/ec2-user/TEST-PEM.pem"):
         try:
             with SCPClient(self.ssh.get_transport()) as scp:
                 scp.put(pem_key_path, remote_path, preserve_times=True)
                 self.logger.info("scp success")
+        except SCPException:
+            self.logger.error("scp failed")
+
+    def get_file(self, remote_path, local_path):
+        try:
+            with SCPClient(self.ssh.get_transport()) as scp:
+                scp.get(remote_path, local_path)
         except SCPException:
             self.logger.error("scp failed")
 
