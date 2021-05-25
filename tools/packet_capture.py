@@ -38,7 +38,7 @@ class RemotePCAP:
     def start(self):
         self.ssh_connector.send_file(local_path=self.p_kill_script, remote_path=self.remote_kill_script)
 
-        self.ssh_connector.command_delivery(commands="sudo nohup tcpdump -i {} -w {}".format(self.eth, self.pcap_file_name))
+        self.ssh_connector.command_delivery(commands="sudo nohup tcpdump -i {} -w {}".format(self.eth, self.pcap_file_name), is_buf_over=True)
 
     def stop(self):
         # kill tcpdump process

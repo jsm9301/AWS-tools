@@ -63,10 +63,12 @@ class SSHConnector:
         except SCPException:
             self.logger.error("scp failed")
 
-    def command_delivery(self, commands):
+    def command_delivery(self, commands, is_buf_over=False):
         stdin, stdout, stderr = self.ssh.exec_command(commands)
 
-        return stdin, stdout, stderr
+        if not is_buf_over:
+            self.logger.info(stdout.read())
+            self.logger.info(stderr.read())
 
     def tunneling(self, host, host_port, pem_key_path,
                   remote_ip, remote_port, user="ec2-user",
