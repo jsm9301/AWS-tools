@@ -1,6 +1,6 @@
 ## Packet Capture on AWS EC2
 You can capture the packets on any EC2(Public or Private EC2)
-- Check parameters in `tools/packet_capture.py`
+- Check parameters in `tools/packet_capture/packet_capture.py`
 ```python
 region = "{us-east-1}"
 bastion_ip = "{enter your bastion IP(public ip address)}"
