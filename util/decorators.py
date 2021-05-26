@@ -9,9 +9,11 @@ class Printer(object):
             if self.pre:
                 print("Waiting for {} ...".format(self.pre))
 
-            func(*args, **kwargs)
+            f = func(*args, **kwargs)
 
             if self.post:
                 print("{} ...".format(self.post))
+
+            return f
 
         return wrappee
