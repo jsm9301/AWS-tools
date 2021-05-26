@@ -1,15 +1,8 @@
 import boto3
-import logging
 
 
 class ELB:
     def __init__(self, region="us-east-2"):
-        self.logger = logging.getLogger("logger")
-        self.logger.setLevel(logging.INFO)
-
-        stream_hander = logging.StreamHandler()
-        self.logger.addHandler(stream_hander)
-
         self.elb_client = boto3.client(service_name="elbv2", region_name=region)
 
     def create_elb(self, elb_name, subnet_list, sg_list, type="application", schema="internet-facing"):

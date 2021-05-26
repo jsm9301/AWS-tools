@@ -3,6 +3,7 @@ from model.vpc import DefaultVPC
 from model.elb import ELB
 from util.ssh import SSHConnector
 from util.utils import *
+from util.decorators import *
 
 
 class DefaultBuilder:
@@ -74,17 +75,14 @@ class DefaultBuilder:
 
             self.web_list.append(web[0])
 
+    @Printer(pre="ec2 instances", post="Created ec2 instances")
     def _check_ec2(self):
-        self.default_ec2.logger.info("======== waiting for ec2 instances ========")
-
         all_instance_ids = [self.bastion.id]
         for web in self.web_list:
             all_instance_ids.append(web.id)
 
         self.default_ec2.ec2_client.get_waiter("instance_status_ok") \
             .wait(InstanceIds=all_instance_ids)
-
-        self.default_ec2.logger.info("======== created ec2 instances ========")
 
     def _install_nginx(self):
         ssh = SSHConnector(region=self.region)

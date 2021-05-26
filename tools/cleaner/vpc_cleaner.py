@@ -1,41 +1,34 @@
-import logging
 from model.ec2 import DefaultEc2
 from model.vpc import DefaultVPC
 from model.elb import ELB
+from util.decorators import *
 
 
 class VPCCleaner:
     def __init__(self, vpc_id, region="us-east-1"):
-        self.logger = logging.getLogger("logger")
-        self.logger.setLevel(logging.INFO)
-
-        stream_hander = logging.StreamHandler()
-        self.logger.addHandler(stream_hander)
-
         self.d_vpc = DefaultVPC(region=region)
         self.d_ec2 = DefaultEc2(vpc_id=vpc_id, region=region)
         self.d_elb = ELB(region=region)
         self.vpc_id = vpc_id
         self.vpc = self.d_ec2.vpc
 
+    @Printer(post="Deleted all Load Balancers")
     def delete_all_elb(self):
         response = self.d_elb.elb_client.describe_load_balancers()
         for lb in response.get("LoadBalancers"):
             self.d_elb.delete_elb_by_arn(lb.get("LoadBalancerArn"))
 
-            self.logger.info("======== Deleted Load Balancer : {} ========".format(lb.get("LoadBalancerName")))
-
         return self
 
+    @Printer(post="Deleted all Target Groups")
     def delete_all_tgr(self):
         response = self.d_elb.elb_client.describe_target_groups()
         for tgr in response.get("TargetGroups"):
             self.d_elb.delete_tgr_by_arn(tgr.get("TargetGroupArn"))
 
-            self.logger.info("======== Deleted Target Group : {} ========".format(tgr.get("TargetGroupName")))
-
         return self
 
+    @Printer(post="Deleted all EC2")
     def delete_all_ec2(self):
         instance_ids = []
         response = self.d_ec2.ec2_client.describe_instances()
@@ -45,19 +38,17 @@ class VPCCleaner:
 
         self.d_ec2.delete_ec2_by_ids(instance_ids)
 
-        self.logger.info("======== Deleted all EC2 ========")
-
         return self
 
+    @Printer(post="Deleted all key pairs")
     def delete_all_key_pair(self):
         response = self.d_ec2.ec2_client.describe_key_pairs()
         for key in response.get("KeyPairs"):
             self.d_ec2.delete_key_pair_by_name(key.get("KeyName"))
 
-        self.logger.info("======== Deleted all key pair ========")
-
         return self
 
+    @Printer(post="Deleted all Security Groups")
     def delete_all_sg(self):
         response = self.d_ec2.ec2_client.describe_security_groups()
         for group in response.get("SecurityGroups"):
@@ -66,16 +57,15 @@ class VPCCleaner:
 
         return self
 
+    @Printer(post="Deleted all NAT Gateway")
     def delete_all_nat(self):
         response = self.d_vpc.ec2_client.describe_nat_gateways()
         for nat in response.get("NatGateways"):
-            print(nat.get("NatGatewayId"))
             self.d_vpc.delete_nat_by_id(nat.get("NatGatewayId"))
-
-            self.logger.info("======== Deleted NAT Gateway : {} ========".format(nat.get("NatGatewayId")))
 
         return self
 
+    @Printer(post="Release all EIP")
     def release_all_eip(self):
         response = self.d_ec2.ec2_client.describe_addresses()
         for eip in response.get("Addresses"):
@@ -83,6 +73,7 @@ class VPCCleaner:
 
         return self
 
+    @Printer(post="Deleted VPC")
     def delete_vpc(self):
         for gw in self.vpc.internet_gateways.all():
             self.vpc.detach_internet_gateway(InternetGatewayId=gw.id)

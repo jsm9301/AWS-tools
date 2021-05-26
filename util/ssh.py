@@ -1,4 +1,3 @@
-import logging
 import boto3
 from scp import SCPClient, SCPException
 import paramiko
@@ -9,12 +8,6 @@ from util.utils import *
 
 class SSHConnector:
     def __init__(self, region="us-east-2"):
-        self.logger = logging.getLogger("logger")
-        self.logger.setLevel(logging.INFO)
-
-        stream_hander = logging.StreamHandler()
-        self.logger.addHandler(stream_hander)
-
         self.ec2 = boto3.resource("ec2", region_name=region)
 
     def _ssh_connect_with_retry(self, ssh, ip_address, retries, pem_key_path, port):
@@ -24,16 +17,12 @@ class SSHConnector:
         interval = 5
         try:
             retries += 1
-            self.logger.info('SSH into the instance: {}'.format(ip_address))
             self.ssh.connect(hostname=ip_address, port=port,
                         username='ec2-user', pkey=pri_key)
             return True
-        except Exception as e:
-            self.logger.error(e)
-
+        except Exception:
             time.sleep(interval)
 
-            self.logger.info('Retrying SSH connection to {}'.format(ip_address))
             self._ssh_connect_with_retry(self.ssh, ip_address, retries, pem_key_path, port)
 
     def connect_ssh(self, instance_id=None, ip_address=None, pem_key_path="./TEST-PEM.pem", port=22):
@@ -44,31 +33,30 @@ class SSHConnector:
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         if self._ssh_connect_with_retry(self.ssh, ip_address, 0, pem_key_path, port):
-            self.logger.info("ssh connected")
+            print("ssh connected")
         else:
-            self.logger.info("ssh failed")
+            print("ssh failed")
 
     def send_file(self, local_path="./TEST-PEM.pem", remote_path="/home/ec2-user/TEST-PEM.pem"):
         try:
             with SCPClient(self.ssh.get_transport()) as scp:
                 scp.put(local_path, remote_path, preserve_times=True)
-                self.logger.info("scp success")
         except SCPException:
-            self.logger.error("scp failed")
+            pass
 
     def get_file(self, remote_path, local_path):
         try:
             with SCPClient(self.ssh.get_transport()) as scp:
                 scp.get(remote_path, local_path)
         except SCPException:
-            self.logger.error("scp failed")
+            pass
 
     def command_delivery(self, commands, is_buf_over=False):
         stdin, stdout, stderr = self.ssh.exec_command(commands)
 
         if not is_buf_over:
-            self.logger.info(stdout.read())
-            self.logger.info(stderr.read())
+            print(stdout.read())
+            print(stderr.read())
 
     def tunneling(self, host, host_port, pem_key_path,
                   remote_ip, remote_port, user="ec2-user",

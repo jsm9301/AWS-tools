@@ -1,16 +1,9 @@
 import boto3
-import logging
 from util.utils import *
 
 
 class DefaultEc2:
     def __init__(self, vpc_id, region="us-east-2"):
-        self.logger = logging.getLogger("logger")
-        self.logger.setLevel(logging.INFO)
-
-        stream_hander = logging.StreamHandler()
-        self.logger.addHandler(stream_hander)
-
         self.ec2 = boto3.resource("ec2", region_name=region)
         self.ec2_client = boto3.client('ec2', region_name=region)
         self.vpc = self.ec2.Vpc(vpc_id)
@@ -98,8 +91,6 @@ if __name__ == '__main__':
                      pem_key_name="TEST-PEM",
                      associate_p_ip=False)
 
-    d_ec2.logger.info("======== waiting for ec2 instances ========")
     d_ec2.ec2_client.get_waiter("instance_status_ok").wait(
         InstanceIds=[bastion[0].id, web_1[0].id, web_2[0].id]
     )
-    d_ec2.logger.info("======== created ec2 instances ========")
