@@ -61,7 +61,7 @@ if __name__ == '__main__':
     pem_key_path = "{enter your private pem key}"
 
     pcap_file_name = "{enter packet log file name}"
-    local_pcap_path = "./"
+    local_pcap_path = "../"
 
     ### start packet capture
     r_pcap = RemotePCAP(region=region, target_ip=target_ip,
