@@ -61,11 +61,11 @@ if __name__ == '__main__':
     pem_key_path = "{enter your private pem key}"
 
     pcap_file_name = "{enter packet log file name}"
-    local_pcap_path = "../"
+    local_pcap_path = "./"
 
     ### start packet capture
     r_pcap = RemotePCAP(region=region, target_ip=target_ip,
-                        pem_key_path=pem_key_path, p_kill_script="../scripts/kill_tcpdump.sh",
+                        pem_key_path=pem_key_path, p_kill_script="../../scripts/kill_tcpdump.sh",
                         pcap_file_name=pcap_file_name, bastion_ip=bastion_ip, local_pcap_path=local_pcap_path)
 
     r_pcap.install_tcpdump()
