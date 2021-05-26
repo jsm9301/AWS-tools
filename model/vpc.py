@@ -143,9 +143,31 @@ class DefaultVPC:
 
         return self
 
+    def delete_nat_by_id(self, nat_id):
+        try:
+            self.ec2_client.delete_nat_gateway(NatGatewayId=nat_id)
+            self.ec2_client.get_waiter('nat_gateway_available') \
+                .wait(Filters=[
+                {
+                    'Name': 'state',
+                    'Values': [
+                        'deleted',
+                    ]
+                }, {
+                    'Name': 'nat-gateway-id',
+                    'Values': [
+                        nat_id,
+                    ]
+                },
+            ])
+        except:
+            pass
+
+    def delete_vpc_by_id(self, vpc_id):
+        self.ec2_client.delete_vpc(VpcId=vpc_id)
 
 if __name__ == '__main__':
-    vpc = DefaultVPC()
+    vpc = DefaultVPC(region="us-east-1")
     vpc.create_VPC(cidr_block="10.0.0.0/16")
     vpc.create_sub()
     vpc.create_ig()

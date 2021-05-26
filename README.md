@@ -2,7 +2,9 @@
 - Build Automatically AWS Infrastructure using boto3
   - `build/default.py`
 - Packet capture features on AWS EC2
-  - `tools/packet_capture.py`
+  - `tools/packet_capture`
+- Delete VPC
+  - `tools/cleaner`
 ## Get Set
 - Need to set before use these tools
 ### Step 1

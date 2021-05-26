@@ -1,7 +1,6 @@
 import boto3
 import logging
 from util.utils import *
-from botocore.exceptions import ClientError
 
 
 class DefaultEc2:
@@ -56,23 +55,23 @@ class DefaultEc2:
 
         return instances
 
-    def delete_ec2_with_ids(self, instance_ids):
+    def delete_ec2_by_ids(self, instance_ids):
         self.ec2.instances.filter(InstanceIds=instance_ids).terminate()
 
-    def delete_key_pair_with_name(self, key_name):
-        try:
-            self.ec2_client.delete_key_pair(KeyName=key_name)
-        except ClientError as e:
-            self.logger.error(e)
+        self.ec2_client.get_waiter('instance_terminated') \
+            .wait(InstanceIds=instance_ids)
 
-    def delete_sg_with_id(self, id):
-        try:
-            self.ec2_client.delete_security_group(GroupId=id)
-        except ClientError as e:
-            self.logger.error(e)
+    def delete_key_pair_by_name(self, key_name):
+        self.ec2_client.delete_key_pair(KeyName=key_name)
+
+    def delete_sg_by_id(self, group_id):
+        self.ec2_client.delete_security_group(GroupId=group_id)
+
+    def release_eip_by_id(self, allocation_id):
+        self.ec2_client.release_address(AllocationId=allocation_id)
 
 if __name__ == '__main__':
-    d_ec2 = DefaultEc2(vpc_id="")
+    d_ec2 = DefaultEc2(vpc_id="", region="us-east-1")
 
     ### make bastion
     # d_ec2.create_pem_key("TEST-PEM")
@@ -104,12 +103,3 @@ if __name__ == '__main__':
         InstanceIds=[bastion[0].id, web_1[0].id, web_2[0].id]
     )
     d_ec2.logger.info("======== created ec2 instances ========")
-
-    ### delete instances
-    # d_ec2.delete_ec2_with_ids(["", ""])
-
-    ### delete key pair
-    # d_ec2.delete_key_pair_with_name("TEST-PEM")
-
-    ### delete sg
-    # d_ec2.delete_sg_with_id("")

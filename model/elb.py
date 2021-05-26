@@ -4,6 +4,12 @@ import logging
 
 class ELB:
     def __init__(self, region="us-east-2"):
+        self.logger = logging.getLogger("logger")
+        self.logger.setLevel(logging.INFO)
+
+        stream_hander = logging.StreamHandler()
+        self.logger.addHandler(stream_hander)
+
         self.elb_client = boto3.client(service_name="elbv2", region_name=region)
 
     def create_elb(self, elb_name, subnet_list, sg_list, type="application", schema="internet-facing"):
@@ -31,8 +37,15 @@ class ELB:
                                                DefaultActions=[{'Type': 'forward',
                                                                 'TargetGroupArn': tgr_arn}])
 
+    def delete_elb_by_arn(self, elb_arn):
+        self.elb_client.delete_load_balancer(LoadBalancerArn=elb_arn)
+
+    def delete_tgr_by_arn(self, tgr_arn):
+        self.elb_client.delete_target_group(TargetGroupArn=tgr_arn)
+
+
 if __name__ == '__main__':
-    elb = ELB()
+    elb = ELB(region="us-east-1")
 
     ### create ELB
     elb_response = elb.create_elb(elb_name="TEST-ALB",
