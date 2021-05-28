@@ -1,5 +1,12 @@
 
 class Printer(object):
+    """
+    This class help you print easily
+
+    Parameters
+        pre: prefix print message
+        post: post print message
+    """
     def __init__(self, pre=None, post=None):
         self.pre = pre
         self.post = post

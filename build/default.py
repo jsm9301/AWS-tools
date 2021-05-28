@@ -7,6 +7,26 @@ from util.decorators import *
 
 
 class DefaultBuilder:
+    """
+    This class will provisioning automatically default infrastructure when we do PoC
+    Architecture: https://user-images.githubusercontent.com/20178616/119307386-99735e80-bca6-11eb-984a-4bf086808bb9.png
+
+    Init
+        region: region
+        vpc_cidr: CIDR block to make VPC
+        vpc_name: VPC name
+        pub_sub_num: number of public subnet
+        pri_sub_num: number of private subnet
+        ami: EC2 ami id
+        bastion_subnet: subnet index to install bastion
+        bastion_name: bastion ec2 name
+        pem_key_name: key pair name
+        web_inbound_list: inbound list for web security group
+        user_name: EC2 user name(default: ec2-user)
+        pem_key_path: key pair path
+        alb_name: load balancer name
+        tgr: target group name
+    """
     def __init__(self, region, vpc_cidr, vpc_name,
                  pub_sub_num, pri_sub_num, ami, bastion_subnet,
                  bastion_name, pem_key_name, web_inbound_list,
@@ -31,6 +51,7 @@ class DefaultBuilder:
         self.tgr_name = tgr_name
 
     def _set_vpc(self):
+        """Create VPC resources(subnet, routing table, internet gateway, NAT)"""
         default_vpc = DefaultVPC(region=self.region) \
             .create_VPC(cidr_block=self.vpc_cidr, vpc_name=self.vpc_name) \
             .create_sub(pub_sub_num=self.pub_sub_num, pri_sub_num=self.pri_sub_num) \
@@ -42,6 +63,7 @@ class DefaultBuilder:
         self.default_vpc = default_vpc
 
     def _set_bastion_ec2(self):
+        """Create bastion EC2 on public subnet"""
         default_ec2 = DefaultEc2(region=self.region, vpc_id=self.default_vpc.vpc.id)
 
         ### make bastion
@@ -61,6 +83,10 @@ class DefaultBuilder:
         self.default_ec2 = default_ec2
 
     def _set_web_ec2(self):
+        """
+        Create Web Server EC2 on all private subnet
+        If you have 2 private subnets, then this function will build a EC2 each
+        """
         ### make web server on private subnet
         self.web_sg = self.default_ec2.create_sg(group_name="web-SG", inbound_list=self.web_inbound_list)
 
@@ -77,6 +103,7 @@ class DefaultBuilder:
 
     @Printer(pre="ec2 instances", post="Created ec2 instances")
     def _check_ec2(self):
+        """Wait all EC2 running"""
         all_instance_ids = [self.bastion.id]
         for web in self.web_list:
             all_instance_ids.append(web.id)
@@ -85,6 +112,7 @@ class DefaultBuilder:
             .wait(InstanceIds=all_instance_ids)
 
     def _install_nginx(self):
+        """Connect to web server on private subnet and install nginx server"""
         ssh = SSHConnector(region=self.region)
 
         for web in self.web_list:
@@ -100,6 +128,10 @@ class DefaultBuilder:
                 tunnel.stop()
 
     def _set_alb(self):
+        """
+        Create application load balancer and target group
+        Register target and Listener
+        """
         elb = ELB(region=self.region)
 
         ### create ELB
@@ -124,6 +156,7 @@ class DefaultBuilder:
         print("DNS is : {}".format(elb_response["LoadBalancers"][0]["DNSName"]))
 
     def build(self):
+        """Build default infrastructure"""
         self._set_vpc()
         self._set_bastion_ec2()
         self._set_web_ec2()
@@ -135,7 +168,7 @@ class DefaultBuilder:
 if __name__ == '__main__':
     ## params
     ### VPC
-    region = "us-east-1"
+    region = "ap-northeast-2"
     vpc_name = "TEST-VPC"
     vpc_cidr = "10.0.0.0/16"
     pub_sub_num = 2
@@ -145,7 +178,7 @@ if __name__ == '__main__':
     bastion_name = "Bastion"
     bastion_subnet = 0
     pem_key_name = "TEST-PEM"
-    ami = "ami-0d5eff06f840b45e9"
+    ami = "ami-0f2c95e9fe3f8f80e"
     web_inbound_list = [{"cidr": "0.0.0.0/0", "protocol": "tcp", "f_port": 80, "t_port": 80},
                         {"cidr": "10.0.0.0/16", "protocol": "tcp", "f_port": 22, "t_port": 22}]
     user_name = "ec2-user"

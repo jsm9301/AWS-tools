@@ -5,6 +5,13 @@ from util.decorators import *
 
 
 class VPCCleaner:
+    """
+    This class have delete all vpc resources features
+
+    Init
+        vpc_id: vpc id to delete
+        region: region
+    """
     def __init__(self, vpc_id, region="us-east-1"):
         self.d_vpc = DefaultVPC(region=region)
         self.d_ec2 = DefaultEc2(vpc_id=vpc_id, region=region)
@@ -14,6 +21,7 @@ class VPCCleaner:
 
     @Printer(post="Deleted all Load Balancers")
     def delete_all_elb(self):
+        """Delete all elb"""
         response = self.d_elb.elb_client.describe_load_balancers()
         for lb in response.get("LoadBalancers"):
             self.d_elb.delete_elb_by_arn(lb.get("LoadBalancerArn"))
@@ -22,6 +30,7 @@ class VPCCleaner:
 
     @Printer(post="Deleted all Target Groups")
     def delete_all_tgr(self):
+        """Delete all target group on elb"""
         response = self.d_elb.elb_client.describe_target_groups()
         for tgr in response.get("TargetGroups"):
             self.d_elb.delete_tgr_by_arn(tgr.get("TargetGroupArn"))
@@ -30,6 +39,7 @@ class VPCCleaner:
 
     @Printer(post="Deleted all EC2")
     def delete_all_ec2(self):
+        """Terminate all EC2"""
         instance_ids = []
         response = self.d_ec2.ec2_client.describe_instances()
         for reservation in response.get("Reservations"):
@@ -42,6 +52,7 @@ class VPCCleaner:
 
     @Printer(post="Deleted all key pairs")
     def delete_all_key_pair(self):
+        """Delete all key pair"""
         response = self.d_ec2.ec2_client.describe_key_pairs()
         for key in response.get("KeyPairs"):
             self.d_ec2.delete_key_pair_by_name(key.get("KeyName"))
@@ -50,6 +61,7 @@ class VPCCleaner:
 
     @Printer(post="Deleted all Security Groups")
     def delete_all_sg(self):
+        """Delete all security group"""
         response = self.d_ec2.ec2_client.describe_security_groups()
         for group in response.get("SecurityGroups"):
             if group.get("GroupName") != "default":
@@ -59,6 +71,7 @@ class VPCCleaner:
 
     @Printer(post="Deleted all NAT Gateway")
     def delete_all_nat(self):
+        """Delete all NAT Gateway"""
         response = self.d_vpc.ec2_client.describe_nat_gateways()
         for nat in response.get("NatGateways"):
             self.d_vpc.delete_nat_by_id(nat.get("NatGatewayId"))
@@ -67,6 +80,7 @@ class VPCCleaner:
 
     @Printer(post="Release all EIP")
     def release_all_eip(self):
+        """Release all EIP"""
         response = self.d_ec2.ec2_client.describe_addresses()
         for eip in response.get("Addresses"):
             self.d_ec2.release_eip_by_id(eip.get("AllocationId"))
@@ -75,6 +89,7 @@ class VPCCleaner:
 
     @Printer(post="Deleted VPC")
     def delete_vpc(self):
+        """Delete resources(subnets, routing table, vpc) on VPC"""
         for gw in self.vpc.internet_gateways.all():
             self.vpc.detach_internet_gateway(InternetGatewayId=gw.id)
             gw.delete()
@@ -107,8 +122,8 @@ class VPCCleaner:
 
 if __name__ == '__main__':
     ### Params
-    region = ""
-    vpc_id = ""
+    region = "ap-northeast-2"
+    vpc_id = "vpc-0d6841a3914124596"
 
     VPCCleaner(vpc_id=vpc_id, region=region) \
         .delete_all_elb() \
